@@ -7,11 +7,8 @@
     require_once 'classes/RollD20.php';
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['roll'])){
-            //weighted roll
-            require_once 'includes/rollWeights.php';
-
-            //roll the d20
-            $d20 = new RollD20($rollWeights);
+            //roll d20
+            $d20 = new RollD20();
             $rollResult = $d20->roll();
             $imagePath = "images/d20_" . $rollResult . ".png";
 
@@ -21,6 +18,24 @@
             $stmt->bindParam(":rollResult", $rollResult);
             $stmt->execute();
 
+            $_SESSION['rollResult'] = $rollResult;
+            $_SESSION['imagePath'] = $imagePath;
+
+        }elseif ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['weighted_roll'])) {
+            //weighted roll
+            require_once 'includes/rollWeights.php';
+
+            //roll the weighted d20
+            $d20 = new RollD20($rollWeights);
+            $rollResult = $d20->roll();
+            $imagePath = "images/d20_" . $rollResult . ".png";
+
+            //insert roll into database
+            $query = "INSERT INTO rolls (roll_result) VALUES (:rollResult);";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(":rollResult", $rollResult);
+            $stmt->execute();
+            
             $_SESSION['rollResult'] = $rollResult;
             $_SESSION['imagePath'] = $imagePath;
 
@@ -58,11 +73,15 @@
             }
         ?>
 
+        <!-- Roll form w/ buttons -->
         <form method="post" id="rollForm">
             <input type="submit" name="roll" value="Roll the D20">
+            <input type="submit" name="weighted_roll" value="Roll the weighted D20">
             <input type="submit" name="reset" value="Reset Rolls">
         </form>
         
+
+       <!-- Table -->
         <?php if (!empty($rolls)): ?>
             <h2>Roll History</h2>
             <table border="1" cellpadding="5"cellspacing="0">
