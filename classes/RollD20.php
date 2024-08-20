@@ -1,3 +1,5 @@
+<?php 
+
 class RollD20 {
     private $weightedValues;
 
