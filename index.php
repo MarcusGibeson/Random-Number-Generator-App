@@ -1,16 +1,22 @@
 <?php
 session_start();
-    function rollD20() {
-        return mt_rand(1,20);
-    }
+require_once 'dbh.inc.php';
+require_once 'RollD20.php';
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['roll'])){
-        $rollResult = rollD20();
+        $d20 = new RollD20();
+        $rollResult = $d20->roll();
         $imagePath = "images/d20_" . $rollResult . ".png";
+
+        //insert roll into database
+        $query = "INSERT INTO rolls (roll_result) VALUES (:rollResult);";
+        $stmt = $pdo->prepare($query);
+        $stmt->bindParam(":rollResult", $rollResult);
+        $stmt->execute();
+
         $_SESSION['rollResult'] = $rollResult;
         $_SESSION['imagePath'] = $imagePath;
     }
-
 ?>
 
 
